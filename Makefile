@@ -4,7 +4,7 @@ SRCS_DIR = ./srcs
 
 OBJS_DIR = ./objs
 
-SRCS_FILE = main.c
+SRCS_FILE = main.c utils.c
 
 SRCS = $(addprefix $(SRCS_DIR)/,$(SRCS_FILE))
 
@@ -18,7 +18,7 @@ CFLAGS = -Wall -Wextra -Werror
 all: $(NAME)
 
 $(NAME) : $(OBJS)
-		$(CC) $(CFLAGS) $(OBJS)-o $(NAME)
+		$(CC) $(CFLAGS) $(OBJS) -o $(NAME)
 
 $(OBJS_DIR)/%.o: $(SRCS_DIR)/%.c
 		mkdir -p $(OBJS_DIR)
