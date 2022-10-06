@@ -1,5 +1,56 @@
 #include "../includes/philo.h"
 
+int	take_fork(t_philo *philo)
+{
+	t_info	*info;
+	struct timeval	tv;
+
+	info = philo->info;
+	pthread_mutex_lock(&info->fork[philo->right]);
+	pthread_mutex_lock(&info->atti);
+	gettimeofday(&tv, NULL);
+	info->time_log = tv.tv_usec;
+	printf("%d\t%d has taken a fork\n", info->time_log, philo->right);
+	pthread_mutex_unlock(&info->atti);
+	pthread_mutex_lock(&info->fork[philo->left]);
+	pthread_mutex_lock(&info->atti);
+	gettimeofday(&tv, NULL);
+	info->time_log = tv.tv_usec;
+	printf("%d\t%d has taken a fork\n", info->time_log, philo->left);
+	pthread_mutex_unlock(&info->atti);
+	return (0);
+}
+
+int	launch_eat(t_philo *philo)
+{
+	t_info	*info;
+	struct timeval	tv;
+
+	info = philo->info;
+	pthread_mutex_lock(&info->atti);
+	gettimeofday(&tv, NULL);
+	info->time_log = tv.tv_usec;
+	printf("%d\t%d is eating", info->time_log, philo->num);
+	pthread_mutex_unlock(&info->atti);
+	return (0);
+}
+
+void	*loop_attitude(void *arg_philo)
+{
+	t_philo	*philo;
+//	t_info	*info;
+
+	philo = arg_philo;
+	while (1)
+	{
+		if (take_fork(philo))
+			return (NULL);
+		if (launch_eat(philo))
+			return (NULL);
+
+	}
+}
+
 void	*do_something(void *arg_philo)
 {
 	static int i;
@@ -22,7 +73,7 @@ int	prepare_table(t_info *info)
 	i = 0;
 	while (i < info->num_philo)
 	{
-		if (pthread_create(&philo[i].phil_thread, NULL, do_something, &philo[i]))
+		if (pthread_create(&philo[i].phil_thread, NULL, loop_attitude, &philo[i]))
 			return (1);
 		if (pthread_create(&obs[i].obs_thread, NULL, do_something, &obs[i]))
 			return (1);
@@ -54,8 +105,8 @@ int	init_philo(t_info *info)
 	while (i < info->num_philo)
 	{
 		info->philo[i].num = i;
-		info->philo[i].right = 0;
-		info->philo[i].left = 0;
+		info->philo[i].right = i;
+		info->philo[i].left = (i + 1) % info->num_philo;
 		info->philo[i].info = info;
 		i++;
 	}
@@ -64,6 +115,8 @@ int	init_philo(t_info *info)
 
 void	init_info(t_info *info, int argc, char **argv)
 {
+	int	i;
+
 	info->num_philo = ft_atoi(argv[1]);
 	info->time_die= ft_atoi(argv[2]);
 	info->time_sleep = ft_atoi(argv[3]);
@@ -71,7 +124,11 @@ void	init_info(t_info *info, int argc, char **argv)
 		info->eat_times = ft_atoi(argv[4]);
 	else
 		info->eat_times = 0;
-	pthread_mutex_init(&info->fork, NULL);
+	info->time_log = 0;
+	pthread_mutex_init(&info->atti, NULL);
+	i = -1;
+	while (++i < info->num_philo)
+		pthread_mutex_init(&info->fork[i], NULL);
 	init_philo(info);
 	init_obs(info);
 //	printf("%d\n", info->num_philo);
@@ -83,12 +140,18 @@ void	init_info(t_info *info, int argc, char **argv)
 int main(int argc, char **argv)
 {
 	t_info	info;
+	int		i;
 
 	if (argc != 4 && argc != 5)
+	{
 		ft_putstr_fd("usage: ./philo  [number_of_philosophers]\n\t\t[time_to_die time_to_eat]\n\t\t[time_to_sleep]\n      (optional)[number_of_times_each_philosopher_must_eat]\n", 2);
+		return (1);
+	}
 	else
 		init_info(&info, argc, argv);
 	prepare_table(&info);
-	pthread_mutex_destroy(&info.fork);
+	i = -1;
+	while (++i < info.num_philo)
+		pthread_mutex_destroy(&info.fork[i]);
 	return (0);
 }
