@@ -9,6 +9,12 @@
 # include <sys/time.h>
 # include <limits.h>
 
+# define FORK " has taken a fork"
+# define EAT " is eating"
+# define SLEEP " is sleeping"
+# define THINK "is thinking"
+# define DIED " died"
+
 void	ft_putstr_fd(char *s, int fd);
 int		ft_atoi(const char *str);
 void	*ft_calloc(size_t n, size_t size);
@@ -36,7 +42,10 @@ typedef struct s_info
 	int				time_die;
 	int				time_sleep;
 	int				eat_times;
-	pthread_mutex_t	fork;
+	long			time_log;
+	int				count_eat;
+	pthread_mutex_t	atti;
+	pthread_mutex_t	fork[200];
 	t_philo			*philo;
 	t_observer		*obs;
 }				t_info;
