@@ -8,23 +8,27 @@
 # include <pthread.h>
 # include <sys/time.h>
 # include <limits.h>
+# include <stdbool.h>
 
-# define FORK " has taken a fork"
-# define EAT " is eating"
-# define SLEEP " is sleeping"
-# define THINK "is thinking"
-# define DIED " died"
+# define FORK 1
+# define EAT 2
+# define SLEEP 3
+# define THINK 4
+# define DIED 5
 
 void	ft_putstr_fd(char *s, int fd);
 int		ft_atoi(const char *str);
 void	*ft_calloc(size_t n, size_t size);
 
 typedef struct s_info	t_info;
+typedef struct s_philo	t_philo;
 
 typedef struct s_observer
 {
+	int			num;
 	pthread_t	obs_thread;
 	t_info		*info;
+	t_philo		*philo;
 }				t_observer;
 
 typedef struct s_philo
@@ -44,6 +48,7 @@ typedef struct s_info
 	int				eat_times;
 	long			time_log;
 	int				count_eat;
+	int				status;
 	pthread_mutex_t	atti;
 	pthread_mutex_t	fork[200];
 	t_philo			*philo;
