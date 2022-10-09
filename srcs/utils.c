@@ -57,3 +57,18 @@ int	ft_atoi(const char *str)
 	}
 	return ((int)ret);
 }
+
+void	*ft_calloc(size_t n, size_t size)
+{
+	void	*rtn_box;
+
+	if (n == 0 || size == 0)
+		return (ft_calloc(1, 1));
+	if (n > SIZE_MAX / size)
+		return (NULL);
+	rtn_box = malloc(n * size);
+	if (rtn_box == NULL)
+		return (NULL);
+	memset(rtn_box, 0, n * size);
+	return (rtn_box);
+}

@@ -51,7 +51,7 @@ typedef struct s_info
 	int				count_eat;
 	int				status;
 	pthread_mutex_t	atti;
-	pthread_mutex_t	time;
+	pthread_mutex_t	monitor;
 	pthread_mutex_t	fork[200];
 	t_philo			*philo;
 	t_observer		*obs;

@@ -16,10 +16,8 @@ void	print_attitude(t_info *info, t_philo *philo, int num)
 	else if (num == EAT && info->status == false)
 	{
 		info->count_eat++;
-		if (info->eat_times == info->count_eat)
-			info->status = true;
-		else
-			printf("%ld\t%d is eating\n", get_time(), philo->num);
+		info->time_log = get_time();
+		printf("%ld\t%d is eating\n", info->time_log, philo->num);
 	}
 	else if (num == SLEEP && info->status == false)
 		printf("%ld\t%d is sleeping\n", get_time(), philo->num);
@@ -27,8 +25,8 @@ void	print_attitude(t_info *info, t_philo *philo, int num)
 		printf("%ld\t%d is thinking\n", get_time(), philo->num);
 	else if (num == DIED && info->status == false)
 	{
-		printf("%ld\t%d died\n", get_time(), philo->num);
 		info->status = true;
+		printf("%ld\t%d died\n", get_time(), philo->num);
 	}
 	pthread_mutex_unlock(&info->atti);
 }
@@ -151,12 +149,22 @@ void	*monitor_philo(void *arg_obs)
 	philo = obs->philo;
 	while (1)
 	{
+//		pthread_mutex_lock(&info->monitor);
+		if (info->eat_times >= info->count_eat)
+		{
+//			pthread_mutex_unlock(&info->monitor);
+			break ;
+		}
+//		pthread_mutex_unlock(&info->monitor);
+//		pthread_mutex_lock(&info->monitor);
 		if (info->time_die < (get_time() - info->time_log))
 		{
+//			pthread_mutex_unlock(&info->monitor);
 			print_attitude(info, philo, DIED);
 			break ;
 		}
-		usleep(300);
+//		pthread_mutex_unlock(&info->monitor);
+		usleep(200);
 	}
 	return (NULL);
 }
@@ -231,7 +239,7 @@ void	init_info(t_info *info, int argc, char **argv)
 	info->count_eat = 0;
 	info->status = false;
 	pthread_mutex_init(&info->atti, NULL);
-	pthread_mutex_init(&info->time, NULL);
+	pthread_mutex_init(&info->monitor, NULL);
 	i = -1;
 	while (++i < info->num_philo)
 		pthread_mutex_init(&info->fork[i], NULL);
@@ -256,6 +264,7 @@ int main(int argc, char **argv)
 	while (++i < info.num_philo)
 		pthread_mutex_destroy(&info.fork[i]);
 	pthread_mutex_destroy(&info.atti);
+	pthread_mutex_destroy(&info.monitor);
 	i = -1;
 	while (++i < info.num_philo)
 	{
