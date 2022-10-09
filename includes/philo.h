@@ -44,12 +44,14 @@ typedef struct s_info
 {
 	int				num_philo;
 	int				time_die;
+	int				time_eat;
 	int				time_sleep;
 	int				eat_times;
 	long			time_log;
 	int				count_eat;
 	int				status;
 	pthread_mutex_t	atti;
+	pthread_mutex_t	time;
 	pthread_mutex_t	fork[200];
 	t_philo			*philo;
 	t_observer		*obs;
