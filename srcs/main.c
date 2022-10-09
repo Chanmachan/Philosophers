@@ -1,32 +1,54 @@
 #include "../includes/philo.h"
 
-long		get_time(void)
+size_t    get_time(void)
 {
-	struct timeval	tv;
+	struct timeval    tp;
+	size_t            ms;
 
-	gettimeofday(&tv, NULL);
-	return (tv.tv_sec * 1000 + tv.tv_usec / 1000);
+	gettimeofday(&tp, NULL);
+	ms = tp.tv_sec * 1000 + tp.tv_usec / 1000;
+	return (ms);
 }
+
+void    precise_sleep(size_t sleep_time)
+{
+	size_t    end_time;
+
+	end_time = get_time() + sleep_time;
+	while (get_time() < end_time)
+		usleep(100);
+}
+
+//long		get_time(void)
+//{
+//	struct timeval	tv;
+//
+//	gettimeofday(&tv, NULL);
+//	return (tv.tv_sec * 1000 + tv.tv_usec / 1000);
+//}
 
 void	print_attitude(t_info *info, t_philo *philo, int num)
 {
+	size_t	output_time;
+
 	pthread_mutex_lock(&info->atti);
+	output_time = info->time_log - info->start_time;
 	if (num == FORK && info->status == false)
-		printf("%ld\t%d has taken a fork\n", get_time(), philo->num);
+		printf("%ld\t%d has taken a fork\n", output_time, philo->num);
 	else if (num == EAT && info->status == false)
 	{
 		info->count_eat++;
 		info->time_log = get_time();
-		printf("%ld\t%d is eating\n", info->time_log, philo->num);
+		printf("%ld\t%d is eating\n", output_time, philo->num);
 	}
 	else if (num == SLEEP && info->status == false)
-		printf("%ld\t%d is sleeping\n", get_time(), philo->num);
+		printf("%ld\t%d is sleeping\n", output_time, philo->num);
 	else if (num == THINK && info->status == false)
-		printf("%ld\t%d is thinking\n", get_time(), philo->num);
+		printf("%ld\t%d is thinking\n", output_time, philo->num);
 	else if (num == DIED && info->status == false)
 	{
 		info->status = true;
-		printf("%ld\t%d died\n", get_time(), philo->num);
+		printf("%ld\t%d died\n", output_time, philo->num);
 	}
 	pthread_mutex_unlock(&info->atti);
 }
@@ -65,12 +87,12 @@ int	launch_eat(t_philo *philo)
 	start_eat_time = get_time();
 	while (1)
 	{
-		if (info->time_eat < get_time() - start_eat_time)
+		if ((size_t)info->time_eat < get_time() - start_eat_time)
 		{
 //			print_attitude(info, philo, EAT);
 			break ;
 		}
-		usleep(200);
+		precise_sleep(info->time_eat);
 	}
 	pthread_mutex_unlock(&info->fork[philo->right]);
 	pthread_mutex_unlock(&info->fork[philo->left]);
@@ -87,12 +109,12 @@ int	start_sleep(t_philo *philo)
 	print_attitude(info, philo, SLEEP);
 	while (1)
 	{
-		if (info->time_sleep < get_time() - start_sleep_time)
+		if ((size_t)info->time_sleep < get_time() - start_sleep_time)
 		{
 //			print_attitude(info, philo, SLEEP);
 			break ;
 		}
-		usleep(200);
+		precise_sleep(info->time_sleep);
 	}
 	print_attitude(info, philo, THINK);
 	return (0);
@@ -121,8 +143,8 @@ void	*loop_attitude(void *arg_philo)
 
 	philo = (t_philo *)arg_philo;
 	info = philo->info;
-	if (philo->num % 2 == 0)
-		usleep(200);
+	if (philo->num % 2)
+		precise_sleep(50);
 	while (1)
 	{
 		take_fork(philo);
@@ -149,22 +171,19 @@ void	*monitor_philo(void *arg_obs)
 	philo = obs->philo;
 	while (1)
 	{
-//		pthread_mutex_lock(&info->monitor);
 		if (info->eat_times >= info->count_eat)
 		{
-//			pthread_mutex_unlock(&info->monitor);
+			info->status = true;
 			break ;
 		}
-//		pthread_mutex_unlock(&info->monitor);
-//		pthread_mutex_lock(&info->monitor);
-		if (info->time_die < (get_time() - info->time_log))
+//		pthread_mutex_lock(&info->atti);
+		if ((size_t)info->time_die < (get_time() - info->time_log))
 		{
-//			pthread_mutex_unlock(&info->monitor);
+//			pthread_mutex_unlock(&info->atti);
 			print_attitude(info, philo, DIED);
 			break ;
 		}
-//		pthread_mutex_unlock(&info->monitor);
-		usleep(200);
+		pthread_mutex_unlock(&info->atti);
 	}
 	return (NULL);
 }
@@ -179,11 +198,21 @@ int	prepare_table(t_info *info)
 	obs = info->obs;
 	i = 0;
 	info->time_log = get_time();
+	info->start_time = get_time();
 	while (i < info->num_philo)
 	{
 		if (pthread_create(&philo[i].phil_thread, NULL, &loop_attitude, &philo[i]))
 			return (1);
 		if (pthread_create(&obs[i].obs_thread, NULL, &monitor_philo, &obs[i]))
+			return (1);
+		i++;
+	}
+	i = 0;
+	while (i < info->num_philo)
+	{
+		if (pthread_join(philo[i].phil_thread, (void *)&philo[i]))
+			return (1);
+		if (pthread_join(obs[i].obs_thread, (void *)&obs[i]))
 			return (1);
 		i++;
 	}
