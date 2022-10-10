@@ -37,8 +37,12 @@ void	print_attitude(t_info *info, t_philo *philo, int num)
 		printf("%ld\t%d has taken a fork\n", output_time, philo->num);
 	else if (num == EAT && info->status == false)
 	{
+		pthread_mutex_lock(&info->var_lock);
 		info->count_eat++;
+//		printf("before : %zu\n", info->time_log);
+		info->before_time_log = info->time_log;
 		info->time_log = get_time();
+		pthread_mutex_unlock(&info->var_lock);
 		printf("%ld\t%d is eating\n", output_time, philo->num);
 	}
 	else if (num == SLEEP && info->status == false)
@@ -47,7 +51,9 @@ void	print_attitude(t_info *info, t_philo *philo, int num)
 		printf("%ld\t%d is thinking\n", output_time, philo->num);
 	else if (num == DIED && info->status == false)
 	{
+		pthread_mutex_lock(&info->var_lock);
 		info->status = true;
+		pthread_mutex_unlock(&info->var_lock);
 		printf("%ld\t%d died\n", output_time, philo->num);
 	}
 	pthread_mutex_unlock(&info->atti);
@@ -80,7 +86,7 @@ int	take_fork(t_philo *philo)
 int	launch_eat(t_philo *philo)
 {
 	t_info	*info;
-	long	start_eat_time;
+	size_t	start_eat_time;
 
 	info = philo->info;
 	print_attitude(info, philo, EAT);
@@ -89,7 +95,6 @@ int	launch_eat(t_philo *philo)
 	{
 		if ((size_t)info->time_eat < get_time() - start_eat_time)
 		{
-//			print_attitude(info, philo, EAT);
 			break ;
 		}
 		precise_sleep(info->time_eat);
@@ -102,7 +107,7 @@ int	launch_eat(t_philo *philo)
 int	start_sleep(t_philo *philo)
 {
 	t_info	*info;
-	long	start_sleep_time;
+	size_t	start_sleep_time;
 
 	info = philo->info;
 	start_sleep_time = get_time();
@@ -171,19 +176,28 @@ void	*monitor_philo(void *arg_obs)
 	philo = obs->philo;
 	while (1)
 	{
-		if (info->eat_times >= info->count_eat)
+		pthread_mutex_lock(&info->var_lock);
+		if (info->eat_times != -1 && info->eat_times >= info->count_eat)
 		{
 			info->status = true;
+			pthread_mutex_unlock(&info->var_lock);
 			break ;
 		}
-//		pthread_mutex_lock(&info->atti);
-		if ((size_t)info->time_die < (get_time() - info->time_log))
+//		else if ((size_t)info->time_die <= (info->time_log - info->before_time_log) && info->status == false)
+		else if ((size_t)info->time_die < (get_time() - info->time_log) && info->status == false)
 		{
-//			pthread_mutex_unlock(&info->atti);
+//			printf("get_time() = %zu : info->time_log = %zu -> [%zu]\n", get_time() , info->time_log, (get_time() - info->time_log));
+//			printf("info->time_log : %zu, info->before_time_log : %zu -> [%zu]\n", info->time_log, info->before_time_log, info->time_log - info->before_time_log);
+			pthread_mutex_unlock(&info->var_lock);
 			print_attitude(info, philo, DIED);
 			break ;
 		}
-		pthread_mutex_unlock(&info->atti);
+		else if (info->status == true)
+		{
+			pthread_mutex_unlock(&info->var_lock);
+			return (NULL);
+		}
+		pthread_mutex_unlock(&info->var_lock);
 	}
 	return (NULL);
 }
@@ -264,11 +278,13 @@ void	init_info(t_info *info, int argc, char **argv)
 		info->eat_times = ft_atoi(argv[5]);
 	else
 		info->eat_times = -1;
+	info->before_time_log = 0;
 	info->time_log = 0;
 	info->count_eat = 0;
 	info->status = false;
 	pthread_mutex_init(&info->atti, NULL);
-	pthread_mutex_init(&info->monitor, NULL);
+	pthread_mutex_init(&info->var_lock, NULL);
+	pthread_mutex_init(&info->status_lock, NULL);
 	i = -1;
 	while (++i < info->num_philo)
 		pthread_mutex_init(&info->fork[i], NULL);
@@ -293,17 +309,17 @@ int main(int argc, char **argv)
 	while (++i < info.num_philo)
 		pthread_mutex_destroy(&info.fork[i]);
 	pthread_mutex_destroy(&info.atti);
-	pthread_mutex_destroy(&info.monitor);
-	i = -1;
-	while (++i < info.num_philo)
-	{
-		pthread_detach(info.philo[i].phil_thread);
-	}
-	i = -1;
-	while (++i < info.num_philo)
-	{
-		pthread_detach(info.obs[i].obs_thread);
-	}
+	pthread_mutex_destroy(&info.var_lock);
+//	i = -1;
+//	while (++i < info.num_philo)
+//	{
+//		pthread_detach(info.philo[i].phil_thread);
+//	}
+//	i = -1;
+//	while (++i < info.num_philo)
+//	{
+//		pthread_detach(info.obs[i].obs_thread);
+//	}
 //	system("leaks -q philo");
 	return (0);
 }
