@@ -34,27 +34,26 @@ void	print_attitude(t_info *info, t_philo *philo, int num)
 	pthread_mutex_lock(&info->atti);
 	output_time = info->time_log - info->start_time;
 	if (num == FORK && info->status == false)
-		printf("%ld\t%d has taken a fork\n", output_time, philo->num);
+		printf("%ld\t%d has taken a fork\n", output_time, philo->num + 1);
 	else if (num == EAT && info->status == false)
 	{
 		pthread_mutex_lock(&info->var_lock);
 		info->count_eat++;
-//		printf("before : %zu\n", info->time_log);
 		info->before_time_log = info->time_log;
 		info->time_log = get_time();
 		pthread_mutex_unlock(&info->var_lock);
-		printf("%ld\t%d is eating\n", output_time, philo->num);
+		printf("%ld\t%d is eating\n", output_time, philo->num + 1);
 	}
 	else if (num == SLEEP && info->status == false)
-		printf("%ld\t%d is sleeping\n", output_time, philo->num);
+		printf("%ld\t%d is sleeping\n", output_time, philo->num + 1);
 	else if (num == THINK && info->status == false)
-		printf("%ld\t%d is thinking\n", output_time, philo->num);
+		printf("%ld\t%d is thinking\n", output_time, philo->num + 1);
 	else if (num == DIED && info->status == false)
 	{
 		pthread_mutex_lock(&info->var_lock);
 		info->status = true;
 		pthread_mutex_unlock(&info->var_lock);
-		printf("%ld\t%d died\n", output_time, philo->num);
+		printf("%ld\t%d died\n", output_time, philo->num + 1);
 	}
 	pthread_mutex_unlock(&info->atti);
 }
@@ -177,14 +176,14 @@ void	*monitor_philo(void *arg_obs)
 	while (1)
 	{
 		pthread_mutex_lock(&info->var_lock);
-		if (info->eat_times != -1 && info->eat_times >= info->count_eat)
+		if (info->eat_times != -1 && info->eat_times >= info->count_eat && info->status == false)
 		{
 			info->status = true;
 			pthread_mutex_unlock(&info->var_lock);
 			break ;
 		}
-//		else if ((size_t)info->time_die <= (info->time_log - info->before_time_log) && info->status == false)
-		else if ((size_t)info->time_die < (get_time() - info->time_log) && info->status == false)
+//		else if ((size_t)info->time_die < (get_time() - info->time_log) && info->status == false)
+		else if ((size_t)info->time_die <= (info->time_log - info->before_time_log) && info->status == false)
 		{
 //			printf("get_time() = %zu : info->time_log = %zu -> [%zu]\n", get_time() , info->time_log, (get_time() - info->time_log));
 //			printf("info->time_log : %zu, info->before_time_log : %zu -> [%zu]\n", info->time_log, info->before_time_log, info->time_log - info->before_time_log);
