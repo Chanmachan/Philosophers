@@ -61,7 +61,7 @@ void	print_attitude(t_info *info, t_philo *philo, int num)
 		info->status = true;
 		pthread_mutex_unlock(&info->var_lock);
 		output_time = get_time() - info->start_time;
-		printf("%ld\t%d died\n", output_time, philo->num + 1);
+		printf("\x1b[31m%ld\t%d died\n\x1b[39m", output_time, philo->num + 1);
 	}
 	pthread_mutex_unlock(&info->atti);
 }
