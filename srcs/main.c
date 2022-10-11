@@ -32,14 +32,15 @@ void	print_attitude(t_info *info, t_philo *philo, int num)
 	size_t	output_time;
 
 	pthread_mutex_lock(&info->atti);
+	pthread_mutex_lock(&info->var_lock);
 	output_time = info->time_log - info->start_time;
+	pthread_mutex_unlock(&info->var_lock);
 	if (num == FORK && info->status == false)
 		printf("%ld\t%d has taken a fork\n", output_time, philo->num + 1);
 	else if (num == EAT && info->status == false)
 	{
 		pthread_mutex_lock(&info->var_lock);
 		info->count_eat++;
-		info->before_time_log = info->time_log;
 		info->time_log = get_time();
 //		if (info->eat_times <= info->count_eat)
 //			info->status = true;
@@ -88,22 +89,16 @@ int	take_fork(t_philo *philo)
 int	launch_eat(t_philo *philo)
 {
 	t_info	*info;
-	size_t	start_eat_time;
+//	size_t	start_eat_time;
 
 	info = philo->info;
 	print_attitude(info, philo, EAT);
-	start_eat_time = get_time();
-	//時間がおかしい、時間通り食べてくれない
-	while (1)
-	{
-		if ((size_t)info->time_eat < get_time() - start_eat_time)
-		{
-			printf("here : %zu\n", get_time() - start_eat_time);
-			//右辺が左辺よりだいぶ大きくなってしまう
-			break ;
-		}
-		precise_sleep(info->time_eat);
-	}
+	precise_sleep(info->time_eat);
+	pthread_mutex_lock(&info->var_lock);
+	info->time_log = get_time();
+	info->last_eat_time = info->time_log;
+	printf("hoge : %zu\n", info->last_eat_time);
+	pthread_mutex_unlock(&info->var_lock);
 	pthread_mutex_unlock(&info->fork[philo->right]);
 	pthread_mutex_unlock(&info->fork[philo->left]);
 	return (0);
@@ -112,20 +107,15 @@ int	launch_eat(t_philo *philo)
 int	start_sleep(t_philo *philo)
 {
 	t_info	*info;
-	size_t	start_sleep_time;
+//	size_t	start_sleep_time;
 
 	info = philo->info;
-	start_sleep_time = get_time();
+//	start_sleep_time = get_time();
 	print_attitude(info, philo, SLEEP);
-	while (1)
-	{
-		if ((size_t)info->time_sleep < get_time() - start_sleep_time)
-		{
-//			print_attitude(info, philo, SLEEP);
-			break ;
-		}
-		precise_sleep(info->time_sleep);
-	}
+	precise_sleep(info->time_sleep);
+	pthread_mutex_lock(&info->var_lock);
+	info->time_log = get_time();
+	pthread_mutex_unlock(&info->var_lock);
 	print_attitude(info, philo, THINK);
 	return (0);
 }
@@ -146,15 +136,56 @@ int	and_think(t_philo *philo)
 	return (0);
 }
 
+void	*monitor_philo(void *arg_philo)
+{
+	t_philo		*philo;
+	t_info		*info;
+
+	philo = (t_philo *)arg_philo;
+	info = philo->info;
+	while (1)
+	{
+		pthread_mutex_lock(&info->var_lock);
+		if (info->status == true)
+			break ;
+		printf("%zu\n", get_time() - info->last_eat_time);
+		if ((size_t)info->time_die < get_time() - info->last_eat_time)
+		{
+//			printf("last_eat_time : %zu\n", info->last_eat_time);
+//			printf("1 : %zu, 2 : %zu\n", info->time_log, get_time() - info->last_eat_time);
+			pthread_mutex_unlock(&info->var_lock);
+			print_attitude(info, philo, DIED);
+			break ;
+		}
+		pthread_mutex_unlock(&info->var_lock);
+		usleep(2000);
+	}
+	pthread_mutex_unlock(&info->var_lock);
+	return (NULL);
+}
+
+int	create_monitoring(t_philo *philo)
+{
+	pthread_t	obs;
+
+	if (pthread_create(&obs, NULL, &monitor_philo, philo))
+		return (-1);
+	if (pthread_detach(obs))
+		return (-1);
+	return (0);
+}
+
 void	*loop_attitude(void *arg_philo)
 {
-	t_philo	*philo;
-	t_info	*info;
+	t_philo		*philo;
+	t_info		*info;
 
 	philo = (t_philo *)arg_philo;
 	info = philo->info;
 	if (philo->num % 2)
 		precise_sleep(50);
+	if (create_monitoring(philo))
+		return (NULL);
 	while (1)
 	{
 		take_fork(philo);
@@ -170,67 +201,22 @@ void	*loop_attitude(void *arg_philo)
 	}
 }
 
-void	*monitor_philo(void *arg_obs)
-{
-	t_observer	*obs;
-	t_info		*info;
-	t_philo		*philo;
-
-	obs = (t_observer *)arg_obs;
-	info = obs->info;
-	philo = obs->philo;
-	while (1)
-	{
-		pthread_mutex_lock(&info->var_lock);
-		if (info->eat_times != -1 && info->eat_times >= info->count_eat && info->status == false)
-		{
-			pthread_mutex_unlock(&info->var_lock);
-			break ;
-		}
-		else if ((size_t)info->time_die <= (info->time_log - info->before_time_log) && info->status == false)
-		{
-//			printf("get_time() = %zu : info->time_log = %zu -> [%zu]\n", get_time() , info->time_log, (get_time() - info->time_log));
-//			printf("info->time_log : %zu, info->before_time_log : %zu -> [%zu]\n", info->time_log, info->before_time_log, info->time_log - info->before_time_log);
-			pthread_mutex_unlock(&info->var_lock);
-			print_attitude(info, philo, DIED);
-			break ;
-		}
-		/*else if ((size_t)info->time_die < (get_time() - info->time_log) && info->status == false)
-		{
-//			printf("get_time() = %zu : info->time_log = %zu -> [%zu]\n", get_time() , info->time_log, (get_time() - info->time_log));
-//			printf("info->time_log : %zu, info->before_time_log : %zu -> [%zu]\n", info->time_log, info->before_time_log, info->time_log - info->before_time_log);
-			pthread_mutex_unlock(&info->var_lock);
-			print_attitude(info, philo, DIED);
-			break ;
-		}*/
-		else if (info->status == true)
-		{
-			printf("hoge\n");
-			pthread_mutex_unlock(&info->var_lock);
-			return (NULL);
-		}
-		pthread_mutex_unlock(&info->var_lock);
-	}
-	return (NULL);
-}
-
 int	prepare_table(t_info *info)
 {
-	t_observer	*obs;
 	t_philo		*philo;
 	int			i;
 
 	philo = info->philo;
-	obs = info->obs;
 	i = 0;
 	info->time_log = get_time();
+	info->last_eat_time = info->time_log;
 	info->start_time = get_time();
 	while (i < info->num_philo)
 	{
 		if (pthread_create(&philo[i].phil_thread, NULL, &loop_attitude, &philo[i]))
 			return (1);
-		if (pthread_create(&obs[i].obs_thread, NULL, &monitor_philo, &obs[i]))
-			return (1);
+//		if (pthread_create(&obs[i].obs_thread, NULL, &monitor_philo, &obs[i]))
+//			return (1);
 		i++;
 	}
 	i = 0;
@@ -238,8 +224,8 @@ int	prepare_table(t_info *info)
 	{
 		if (pthread_join(philo[i].phil_thread, (void *)&philo[i]))
 			return (1);
-		if (pthread_join(obs[i].obs_thread, (void *)&obs[i]))
-			return (1);
+//		if (pthread_join(obs[i].obs_thread, (void *)&obs[i]))
+//			return (1);
 		i++;
 	}
 	return (0);
@@ -250,6 +236,8 @@ int	init_obs(t_info *info)
 	int	i;
 
 	info->obs = malloc(sizeof(t_observer) * info->num_philo);
+	if (info->obs == NULL)
+		return (-1);
 	i = 0;
 	while (i < info->num_philo)
 	{
@@ -266,6 +254,8 @@ int	init_philo(t_info *info)
 	int	i;
 
 	info->philo = malloc(sizeof(t_philo) * info->num_philo);
+	if (info->philo == NULL)
+		return (-1);
 	i = 0;
 	while (i < info->num_philo)
 	{
@@ -290,7 +280,7 @@ void	init_info(t_info *info, int argc, char **argv)
 		info->eat_times = ft_atoi(argv[5]);
 	else
 		info->eat_times = -1;
-	info->before_time_log = 0;
+	info->last_eat_time = 0;
 	info->time_log = 0;
 	info->count_eat = 0;
 	info->status = false;

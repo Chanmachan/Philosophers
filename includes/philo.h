@@ -47,7 +47,7 @@ typedef struct s_info
 	int				time_eat;
 	int				time_sleep;
 	int				eat_times;
-	size_t			before_time_log;
+	size_t			last_eat_time;
 	size_t			time_log;
 	size_t			start_time;
 	int				count_eat;
