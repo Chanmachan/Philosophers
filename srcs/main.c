@@ -49,19 +49,19 @@ void	print_attitude(t_info *info, t_philo *philo, int num)
 		if (info->eat_times <= philo->count_eat && info->eat_times != -1)
 			info->status = true;
 		pthread_mutex_unlock(&info->var_lock);
-		printf("%ld\t%d is eating\n", output_time, philo->num + 1);
+		printf("\x1b[32m%ld\t%d is eating\n\x1b[0m", output_time, philo->num + 1);
 	}
 	else if (num == SLEEP && info->status == false)
-		printf("%ld\t%d is sleeping\n", output_time, philo->num + 1);
+		printf("\x1b[35m%ld\t%d is sleeping\n\x1b[0m", output_time, philo->num + 1);
 	else if (num == THINK && info->status == false)
-		printf("%ld\t%d is thinking\n", output_time, philo->num + 1);
+		printf("\x1b[36m%ld\t%d is thinking\n\x1b[0m", output_time, philo->num + 1);
 	else if (num == DIED && info->status == false)
 	{
 		pthread_mutex_lock(&info->var_lock);
 		info->status = true;
 		pthread_mutex_unlock(&info->var_lock);
 		output_time = get_time() - info->start_time;
-		printf("\x1b[31m%ld\t%d died\n\x1b[39m", output_time, philo->num + 1);
+		printf("\x1b[31m%ld\t%d died\n\x1b[0m", output_time, philo->num + 1);
 	}
 	pthread_mutex_unlock(&info->atti);
 }
