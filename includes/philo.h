@@ -37,6 +37,8 @@ typedef struct s_philo
 	int			num;
 	int			right;
 	int			left;
+	size_t		last_eat_time;
+	int			count_eat;
 	t_info		*info;
 }				t_philo;
 
@@ -50,10 +52,10 @@ typedef struct s_info
 	int				time_eat;
 	int				time_sleep;
 	int				eat_times;
-	size_t			last_eat_time;
+//	size_t			last_eat_time;
 	size_t			time_log;
 	size_t			start_time;
-	int				count_eat;
+//	int				count_eat;
 	int				status;
 	pthread_mutex_t	atti;
 	pthread_mutex_t	var_lock;

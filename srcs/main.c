@@ -40,14 +40,14 @@ void	print_attitude(t_info *info, t_philo *philo, int num)
 	else if (num == EAT && info->status == false)
 	{
 		pthread_mutex_lock(&info->var_lock);
-		info->count_eat++;
+		philo->count_eat++;
 //		info->time_log = get_time();
 //		info->last_eat_time = info->time_log;
-		info->before_eat_time = info->last_eat_time;
-		info->last_eat_time = get_time();
+//		info->before_eat_time = info->last_eat_time;
+		philo->last_eat_time = get_time();
 //		printf("last : %zu\n", info->last_eat_time);
-//		if (info->eat_times <= info->count_eat)
-//			info->status = true;
+		if (info->eat_times <= philo->count_eat && info->eat_times != -1)
+			info->status = true;
 		pthread_mutex_unlock(&info->var_lock);
 		printf("%ld\t%d is eating\n", output_time, philo->num + 1);
 	}
@@ -115,13 +115,14 @@ void	*monitor_philo(void *arg_philo)
 
 	philo = (t_philo *)arg_philo;
 	info = philo->info;
+	philo->last_eat_time = get_time();
 	while (1)
 	{
 		pthread_mutex_lock(&info->var_lock);
 		if (info->status == true)
 			break ;
-		printf("%zu <= %zu : %zu, %zu\n", (size_t)info->time_die ,get_time() - info->last_eat_time, get_time(), info->last_eat_time);
-		if ((size_t)info->time_die <= get_time() - info->last_eat_time)
+//		printf("%zu <= %zu : %zu, %zu\n", (size_t)info->time_die ,get_time() - philo->last_eat_time, get_time(), philo->last_eat_time);
+		if ((size_t)info->time_die <= get_time() - philo->last_eat_time)
 		{
 			pthread_mutex_unlock(&info->var_lock);
 			print_attitude(info, philo, DIED);
@@ -179,7 +180,8 @@ int	prepare_table(t_info *info)
 	philo = info->philo;
 	i = 0;
 	info->time_log = get_time();
-	info->last_eat_time = info->time_log;
+	philo->last_eat_time = info->time_log;
+//	printf("here : %zu\n", philo->last_eat_time);
 	info->start_time = get_time();
 	while (i < info->num_philo)
 	{
@@ -228,6 +230,8 @@ int	init_philo(t_info *info)
 		info->philo[i].num = i;
 		info->philo[i].right = i;
 		info->philo[i].left = (i + 1) % info->num_philo;
+		info->philo[i].last_eat_time = 0;
+		info->philo[i].count_eat = 0;
 		info->philo[i].info = info;
 		i++;
 	}
@@ -246,9 +250,7 @@ void	init_info(t_info *info, int argc, char **argv)
 		info->eat_times = ft_atoi(argv[5]);
 	else
 		info->eat_times = -1;
-	info->last_eat_time = 0;
 	info->time_log = 0;
-	info->count_eat = 0;
 	info->status = false;
 	pthread_mutex_init(&info->atti, NULL);
 	pthread_mutex_init(&info->var_lock, NULL);
