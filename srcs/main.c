@@ -41,7 +41,11 @@ void	print_attitude(t_info *info, t_philo *philo, int num)
 	{
 		pthread_mutex_lock(&info->var_lock);
 		info->count_eat++;
-		info->time_log = get_time();
+//		info->time_log = get_time();
+//		info->last_eat_time = info->time_log;
+		info->before_eat_time = info->last_eat_time;
+		info->last_eat_time = get_time();
+//		printf("last : %zu\n", info->last_eat_time);
 //		if (info->eat_times <= info->count_eat)
 //			info->status = true;
 		pthread_mutex_unlock(&info->var_lock);
@@ -73,18 +77,6 @@ int	take_fork(t_philo *philo)
 	print_attitude(info, philo, FORK);
 	return (0);
 }
-//
-//int	launch_eat(t_philo *philo)
-//{
-//	t_info	*info;
-//
-//	info = philo->info;
-//	info->time_log = get_time();
-//	print_attitude(info, philo, EAT);
-//	pthread_mutex_unlock(&info->fork[philo->right]);
-//	pthread_mutex_unlock(&info->fork[philo->left]);
-//	return (0);
-//}
 
 int	launch_eat(t_philo *philo)
 {
@@ -96,8 +88,6 @@ int	launch_eat(t_philo *philo)
 	precise_sleep(info->time_eat);
 	pthread_mutex_lock(&info->var_lock);
 	info->time_log = get_time();
-	info->last_eat_time = info->time_log;
-	printf("hoge : %zu\n", info->last_eat_time);
 	pthread_mutex_unlock(&info->var_lock);
 	pthread_mutex_unlock(&info->fork[philo->right]);
 	pthread_mutex_unlock(&info->fork[philo->left]);
@@ -107,31 +97,13 @@ int	launch_eat(t_philo *philo)
 int	start_sleep(t_philo *philo)
 {
 	t_info	*info;
-//	size_t	start_sleep_time;
 
 	info = philo->info;
-//	start_sleep_time = get_time();
 	print_attitude(info, philo, SLEEP);
 	precise_sleep(info->time_sleep);
 	pthread_mutex_lock(&info->var_lock);
 	info->time_log = get_time();
 	pthread_mutex_unlock(&info->var_lock);
-	print_attitude(info, philo, THINK);
-	return (0);
-}
-
-int	and_think(t_philo *philo)
-{
-	t_info *info;
-
-	info = philo->info;
-	pthread_mutex_lock(&info->atti);
-	if (info->status == true)
-	{
-		pthread_mutex_unlock(&info->atti);
-		return (1);
-	}
-	pthread_mutex_unlock(&info->atti);
 	print_attitude(info, philo, THINK);
 	return (0);
 }
@@ -148,18 +120,15 @@ void	*monitor_philo(void *arg_philo)
 		pthread_mutex_lock(&info->var_lock);
 		if (info->status == true)
 			break ;
-//		printf("%d\n", info->time_die);
-//		printf("%zu\n", get_time() - info->last_eat_time);
-		if ((size_t)info->time_die < get_time() - info->last_eat_time)
+		printf("%zu <= %zu : %zu, %zu\n", (size_t)info->time_die ,get_time() - info->last_eat_time, get_time(), info->last_eat_time);
+		if ((size_t)info->time_die <= get_time() - info->last_eat_time)
 		{
-//			printf("last_eat_time : %zu\n", info->last_eat_time);
-//			printf("1 : %zu, 2 : %zu\n", info->time_log, get_time() - info->last_eat_time);
 			pthread_mutex_unlock(&info->var_lock);
 			print_attitude(info, philo, DIED);
 			break ;
 		}
 		pthread_mutex_unlock(&info->var_lock);
-		usleep(2000);
+		usleep(1000);
 	}
 	pthread_mutex_unlock(&info->var_lock);
 	return (NULL);
