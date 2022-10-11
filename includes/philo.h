@@ -40,6 +40,9 @@ typedef struct s_philo
 	t_info		*info;
 }				t_philo;
 
+//infoの中にlast_eat_time置いておくと、全体で共有しちゃうから1人が食べると値が更新されちゃう
+//構造体philoにlast_eat_time, count_eatを割り当てていくべき？
+
 typedef struct s_info
 {
 	int				num_philo;
