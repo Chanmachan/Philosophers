@@ -148,7 +148,8 @@ void	*monitor_philo(void *arg_philo)
 		pthread_mutex_lock(&info->var_lock);
 		if (info->status == true)
 			break ;
-		printf("%zu\n", get_time() - info->last_eat_time);
+//		printf("%d\n", info->time_die);
+//		printf("%zu\n", get_time() - info->last_eat_time);
 		if ((size_t)info->time_die < get_time() - info->last_eat_time)
 		{
 //			printf("last_eat_time : %zu\n", info->last_eat_time);
@@ -195,7 +196,7 @@ void	*loop_attitude(void *arg_philo)
 		if (info->status == true)
 		{
 			pthread_mutex_unlock(&info->atti);
-			return (0);
+			return (NULL);
 		}
 		pthread_mutex_unlock(&info->atti);
 	}
@@ -215,8 +216,6 @@ int	prepare_table(t_info *info)
 	{
 		if (pthread_create(&philo[i].phil_thread, NULL, &loop_attitude, &philo[i]))
 			return (1);
-//		if (pthread_create(&obs[i].obs_thread, NULL, &monitor_philo, &obs[i]))
-//			return (1);
 		i++;
 	}
 	i = 0;
@@ -224,8 +223,6 @@ int	prepare_table(t_info *info)
 	{
 		if (pthread_join(philo[i].phil_thread, (void *)&philo[i]))
 			return (1);
-//		if (pthread_join(obs[i].obs_thread, (void *)&obs[i]))
-//			return (1);
 		i++;
 	}
 	return (0);
@@ -312,16 +309,6 @@ int main(int argc, char **argv)
 		pthread_mutex_destroy(&info.fork[i]);
 	pthread_mutex_destroy(&info.atti);
 	pthread_mutex_destroy(&info.var_lock);
-//	i = -1;
-//	while (++i < info.num_philo)
-//	{
-//		pthread_detach(info.philo[i].phil_thread);
-//	}
-//	i = -1;
-//	while (++i < info.num_philo)
-//	{
-//		pthread_detach(info.obs[i].obs_thread);
-//	}
 //	system("leaks -q philo");
 	return (0);
 }
