@@ -47,12 +47,14 @@ typedef struct s_info
 	int				time_eat;
 	int				time_sleep;
 	int				eat_times;
+	size_t			before_time_log;
 	size_t			time_log;
 	size_t			start_time;
 	int				count_eat;
 	int				status;
 	pthread_mutex_t	atti;
-	pthread_mutex_t	monitor;
+	pthread_mutex_t	var_lock;
+	pthread_mutex_t	status_lock;
 	pthread_mutex_t	fork[200];
 	t_philo			*philo;
 	t_observer		*obs;
