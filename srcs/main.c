@@ -256,6 +256,33 @@ int	put_usage(void)
 	return (1);
 }
 
+int	check_each_args(int argc, char **argv)
+{
+	int	i;
+	int	philo_num;
+	int	sec;
+
+	philo_num = ft_atoi(argv[1]);
+	if (philo_num > 200)
+	{
+		ft_putstr_fd("\x1b[31mError\x1b[0m: Invalid Arguments\n", 2);
+		return (1);
+	}
+	i = 1;
+	if (argc == 6)
+		argc -= 1;
+	while (++i < argc)
+	{
+		sec = ft_atoi(argv[i]);
+		if (sec < 60)
+		{
+			ft_putstr_fd("\x1b[31mError\x1b[0m: Invalid Arguments\n", 2);
+			return (1);
+		}
+	}
+	return (0);
+}
+
 int	valid_arg(int argc, char **argv)
 {
 	int	i;
@@ -276,6 +303,8 @@ int	valid_arg(int argc, char **argv)
 			}
 		}
 	}
+	if (check_each_args(argc, argv))
+		return (1);
 	return (0);
 }
 
