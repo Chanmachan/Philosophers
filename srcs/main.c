@@ -160,7 +160,6 @@ void	*loop_attitude(void *arg_philo)
 			return (NULL);
 		}
 		pthread_mutex_unlock(&info->atti);
-		printf("hoge\n");
 	}
 }
 
