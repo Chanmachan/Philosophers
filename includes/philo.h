@@ -17,6 +17,7 @@
 # define DIED 5
 
 void	ft_putstr_fd(char *s, int fd);
+int		ft_isdigit(int c);
 int		ft_atoi(const char *str);
 void	*ft_calloc(size_t n, size_t size);
 

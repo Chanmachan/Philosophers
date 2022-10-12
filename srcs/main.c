@@ -3,11 +3,9 @@
 size_t    get_time(void)
 {
 	struct timeval    tp;
-	size_t            ms;
 
 	gettimeofday(&tp, NULL);
-	ms = tp.tv_sec * 1000 + tp.tv_usec / 1000;
-	return (ms);
+	return (tp.tv_sec * 1000 + tp.tv_usec / 1000);
 }
 
 void    precise_sleep(size_t sleep_time)
@@ -18,14 +16,6 @@ void    precise_sleep(size_t sleep_time)
 	while (get_time() < end_time)
 		usleep(100);
 }
-
-//long		get_time(void)
-//{
-//	struct timeval	tv;
-//
-//	gettimeofday(&tv, NULL);
-//	return (tv.tv_sec * 1000 + tv.tv_usec / 1000);
-//}
 
 void	print_attitude(t_info *info, t_philo *philo, int num)
 {
@@ -40,12 +30,9 @@ void	print_attitude(t_info *info, t_philo *philo, int num)
 	else if (num == EAT && info->status == false)
 	{
 		pthread_mutex_lock(&info->var_lock);
-		philo->count_eat++;
-//		info->time_log = get_time();
-//		info->last_eat_time = info->time_log;
-//		info->before_eat_time = info->last_eat_time;
+		if (info->eat_times != -1)
+			philo->count_eat++;
 		philo->last_eat_time = get_time();
-//		printf("last : %zu\n", info->last_eat_time);
 		if (info->eat_times <= philo->count_eat && info->eat_times != -1)
 			info->status = true;
 		pthread_mutex_unlock(&info->var_lock);
@@ -81,7 +68,6 @@ int	take_fork(t_philo *philo)
 int	launch_eat(t_philo *philo)
 {
 	t_info	*info;
-//	size_t	start_eat_time;
 
 	info = philo->info;
 	print_attitude(info, philo, EAT);
@@ -121,7 +107,6 @@ void	*monitor_philo(void *arg_philo)
 		pthread_mutex_lock(&info->var_lock);
 		if (info->status == true)
 			break ;
-//		printf("%zu <= %zu : %zu, %zu\n", (size_t)info->time_die ,get_time() - philo->last_eat_time, get_time(), philo->last_eat_time);
 		if ((size_t)info->time_die <= get_time() - philo->last_eat_time)
 		{
 			pthread_mutex_unlock(&info->var_lock);
@@ -154,7 +139,7 @@ void	*loop_attitude(void *arg_philo)
 	philo = (t_philo *)arg_philo;
 	info = philo->info;
 	if (philo->num % 2)
-		precise_sleep(50);
+		precise_sleep(200);
 	if (create_monitoring(philo))
 		return (NULL);
 	while (1)
@@ -181,7 +166,6 @@ int	prepare_table(t_info *info)
 	i = 0;
 	info->time_log = get_time();
 	philo->last_eat_time = info->time_log;
-//	printf("here : %zu\n", philo->last_eat_time);
 	info->start_time = get_time();
 	while (i < info->num_philo)
 	{
@@ -262,18 +246,47 @@ void	init_info(t_info *info, int argc, char **argv)
 	init_obs(info);
 }
 
+int	put_usage(void)
+{
+	ft_putstr_fd("\x1b[31musage\x1b[0m: ", 2);
+	ft_putstr_fd("./philo  [number_of_philosophers]\n", 2);
+	ft_putstr_fd("\t\t[time_to_die]\n\t\t[time_to_eat]\n", 2);
+	ft_putstr_fd("\t\t[time_to_sleep]\n      (optional)", 2);
+	ft_putstr_fd("[number_of_times_each_philosopher_must_eat]\n", 2);
+	return (1);
+}
+
+int	valid_arg(int argc, char **argv)
+{
+	int	i;
+	int	j;
+
+	if (argc != 5 && argc != 6)
+		return (put_usage());
+	i = 0;
+	while (++i < argc)
+	{
+		j = 0;
+		while (argv[i][j] != '\0')
+		{
+			if (ft_isdigit(argv[i][j++]) == 0)
+			{
+				ft_putstr_fd("\x1b[31mError\x1b[0m: Invalid Arguments\n", 2);
+				return (1);
+			}
+		}
+	}
+	return (0);
+}
+
 int main(int argc, char **argv)
 {
 	t_info	info;
 	int		i;
 
-	if (argc != 5 && argc != 6)
-	{
-		ft_putstr_fd("usage: ./philo  [number_of_philosophers]\n\t\t[time_to_die]\n\t\t[time_to_eat]\n\t\t[time_to_sleep]\n      (optional)[number_of_times_each_philosopher_must_eat]\n", 2);
+	if (valid_arg(argc, argv))
 		return (1);
-	}
-	else
-		init_info(&info, argc, argv);
+	init_info(&info, argc, argv);
 	prepare_table(&info);
 	i = -1;
 	while (++i < info.num_philo)
