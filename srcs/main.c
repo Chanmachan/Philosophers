@@ -72,6 +72,8 @@ int	launch_eat(t_philo *philo)
 	info = philo->info;
 	print_attitude(info, philo, EAT);
 	precise_sleep(info->time_eat);
+	if (info->num_philo == 1)
+		return (0);
 	pthread_mutex_lock(&info->var_lock);
 	info->time_log = get_time();
 	pthread_mutex_unlock(&info->var_lock);
@@ -111,6 +113,8 @@ void	*monitor_philo(void *arg_philo)
 		{
 			pthread_mutex_unlock(&info->var_lock);
 			print_attitude(info, philo, DIED);
+			if (info->num_philo == 1)
+				pthread_mutex_unlock(&info->fork[philo->right]);
 			break ;
 		}
 		pthread_mutex_unlock(&info->var_lock);
@@ -145,6 +149,8 @@ void	*loop_attitude(void *arg_philo)
 	while (1)
 	{
 		take_fork(philo);
+		if (info->num_philo == 1)
+			return (NULL);
 		launch_eat(philo);
 		start_sleep(philo);
 		pthread_mutex_lock(&info->atti);
@@ -154,6 +160,7 @@ void	*loop_attitude(void *arg_philo)
 			return (NULL);
 		}
 		pthread_mutex_unlock(&info->atti);
+		printf("hoge\n");
 	}
 }
 
