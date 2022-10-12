@@ -4,7 +4,7 @@ SRCS_DIR = ./srcs
 
 OBJS_DIR = ./objs
 
-SRCS_FILE = main.c utils.c
+SRCS_FILE = main.c utils.c init.c valid_args.c attitude.c monitor.c
 
 SRCS = $(addprefix $(SRCS_DIR)/,$(SRCS_FILE))
 

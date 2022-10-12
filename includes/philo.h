@@ -16,21 +16,8 @@
 # define THINK 4
 # define DIED 5
 
-void	ft_putstr_fd(char *s, int fd);
-int		ft_isdigit(int c);
-int		ft_atoi(const char *str);
-void	*ft_calloc(size_t n, size_t size);
-
 typedef struct s_info	t_info;
 typedef struct s_philo	t_philo;
-
-typedef struct s_observer
-{
-	int			num;
-	pthread_t	obs_thread;
-	t_info		*info;
-	t_philo		*philo;
-}				t_observer;
 
 typedef struct s_philo
 {
@@ -43,27 +30,48 @@ typedef struct s_philo
 	t_info		*info;
 }				t_philo;
 
-//infoの中にlast_eat_time置いておくと、全体で共有しちゃうから1人が食べると値が更新されちゃう
-//構造体philoにlast_eat_time, count_eatを割り当てていくべき？
-
 typedef struct s_info
 {
+	int				error;
 	int				num_philo;
 	int				time_die;
 	int				time_eat;
 	int				time_sleep;
 	int				eat_times;
-//	size_t			last_eat_time;
 	size_t			time_log;
 	size_t			start_time;
-//	int				count_eat;
 	int				status;
 	pthread_mutex_t	atti;
 	pthread_mutex_t	var_lock;
-	pthread_mutex_t	status_lock;
 	pthread_mutex_t	fork[200];
 	t_philo			*philo;
-	t_observer		*obs;
 }				t_info;
+
+void	ft_putstr_fd(char *s, int fd);
+int		ft_isdigit(int c);
+int		ft_atoi(const char *str);
+void	*ft_calloc(size_t n, size_t size);
+
+//main.c
+int	error_msg(void);
+size_t	get_time(void);
+void	precise_sleep(size_t sleep_time);
+void	print_attitude(t_info *info, t_philo *philo, int num);
+
+//init.c
+int	init_info(t_info *info, int argc, char **argv);
+
+//valid_arg.c
+int	valid_arg(int argc, char **argv);
+
+//attitude.c
+int	take_fork(t_philo *philo);
+int	launch_eat(t_philo *philo);
+int	start_sleep(t_philo *philo);
+void	*loop_attitude(void *arg_philo);
+
+//monitor.c
+void	*monitor_philo(void *arg_philo);
+int	create_monitoring(t_philo *philo);
 
 #endif

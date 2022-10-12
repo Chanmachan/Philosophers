@@ -1,12 +1,15 @@
 #include "../includes/philo.h"
 
-int	init_philo(t_info *info)
+static int	init_philo(t_info *info)
 {
 	int	i;
 
 	info->philo = malloc(sizeof(t_philo) * info->num_philo);
 	if (info->philo == NULL)
-		return (-1);
+	{
+		ft_putstr_fd("\x1b[31mError\x1b[0m: malloc error", 2);
+		return (1);
+	}
 	i = 0;
 	while (i < info->num_philo)
 	{
@@ -21,10 +24,11 @@ int	init_philo(t_info *info)
 	return (0);
 }
 
-void	init_info(t_info *info, int argc, char **argv)
+int	init_info(t_info *info, int argc, char **argv)
 {
 	int	i;
 
+	info->error = 0;
 	info->num_philo = ft_atoi(argv[1]);
 	info->time_die= ft_atoi(argv[2]);
 	info->time_eat= ft_atoi(argv[3]);
@@ -37,9 +41,10 @@ void	init_info(t_info *info, int argc, char **argv)
 	info->status = false;
 	pthread_mutex_init(&info->atti, NULL);
 	pthread_mutex_init(&info->var_lock, NULL);
-	pthread_mutex_init(&info->status_lock, NULL);
 	i = -1;
 	while (++i < info->num_philo)
 		pthread_mutex_init(&info->fork[i], NULL);
-	init_philo(info);
+	if (init_philo(info))
+		return (1);
+	return (0);
 }
