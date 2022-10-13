@@ -74,4 +74,8 @@ void	*loop_attitude(void *arg_philo);
 void	*monitor_philo(void *arg_philo);
 int		create_monitoring(t_philo *philo);
 
+//philo_utils.c
+void	all_free(t_info *info);
+void	destroy_all_mutex(t_info *info);
+
 #endif

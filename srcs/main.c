@@ -97,22 +97,6 @@ int	prepare_table(t_info *info)
 	return (0);
 }
 
-void	all_free(t_info *info)
-{
-	free(info->philo);
-}
-
-void	destroy_all_mutex(t_info *info)
-{
-	int		i;
-
-	i = -1;
-	while (++i < info->num_philo)
-		pthread_mutex_destroy(&info->fork[i]);
-	pthread_mutex_destroy(&info->atti);
-	pthread_mutex_destroy(&info->var_lock);
-}
-
 int	main(int argc, char **argv)
 {
 	t_info	info;

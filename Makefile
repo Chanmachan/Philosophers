@@ -7,7 +7,8 @@ OBJS_DIR = ./objs
 INC_DIR = ./includes
 
 
-SRCS_FILE = main.c utils.c init.c valid_args.c attitude.c monitor.c
+SRCS_FILE = main.c init.c valid_args.c attitude.c monitor.c \
+				philo_utils.c ft_utils.c
 
 SRCS = $(addprefix $(SRCS_DIR)/,$(SRCS_FILE))
 
