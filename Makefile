@@ -16,7 +16,7 @@ INCLUDES = ../includes/philo.h
 
 OBJS = $(patsubst $(SRCS_DIR)/%, $(OBJS_DIR)/%, $(SRCS:.c=.o))
 
-CFLAGS = -Wall -Wextra -Werror -pthread -fsanitize=thread -g
+CFLAGS = -Wall -Wextra -Werror
 #CFLAGS = -Wall -Wextra -Werror -pthread -fsanitize=thread -g
 #-MP -MMD -pthread -fsanitize=thread
 
