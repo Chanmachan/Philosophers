@@ -17,7 +17,7 @@ static int	check_each_args(int argc, char **argv)
 	int	sec;
 
 	philo_num = ft_atoi(argv[1]);
-	if (philo_num > 200)
+	if (philo_num > 200 || philo_num <= 0)
 	{
 		ft_putstr_fd("\x1b[31mError\x1b[0m: Invalid Arguments\n", 2);
 		return (1);
