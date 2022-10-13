@@ -33,4 +33,7 @@ fclean: clean
 
 re: fclean all
 
+norm:
+		norminette $(SRCS_DIR)
+
 .PHONY: all clean fclean re
