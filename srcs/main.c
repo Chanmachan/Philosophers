@@ -20,14 +20,15 @@ void	precise_sleep(size_t sleep_time)
 void	count_every_philo_eat(t_philo *philo)
 {
 	t_info	*info;
-	int	i;
+	int		i;
 
 	info = philo->info;
 	pthread_mutex_lock(&philo->info->var_lock);
 	if (philo->info->eat_times != -1)
 		philo->count_eat++;
 	philo->last_eat_time = get_time();
-	if (philo->info->eat_times == philo->count_eat && philo->info->eat_times != -1)
+	if (philo->info->eat_times == philo->count_eat \
+		&& philo->info->eat_times != -1)
 		philo->eat_flag = true;
 	i = 0;
 	while (i < info->num_philo)
@@ -83,7 +84,8 @@ int	prepare_table(t_info *info)
 	i = -1;
 	while (++i < info->num_philo)
 	{
-		if (pthread_create(&philo[i].phil_thread, NULL, &loop_attitude, &philo[i]))
+		if (pthread_create(&philo[i].phil_thread, NULL, \
+							&loop_attitude, &philo[i]))
 			return (1);
 	}
 	i = -1;
@@ -111,7 +113,7 @@ void	destroy_all_mutex(t_info *info)
 	pthread_mutex_destroy(&info->var_lock);
 }
 
-int main(int argc, char **argv)
+int	main(int argc, char **argv)
 {
 	t_info	info;
 

@@ -31,8 +31,8 @@ int	init_info(t_info *info, int argc, char **argv)
 
 	info->error = 0;
 	info->num_philo = ft_atoi(argv[1]);
-	info->time_die= ft_atoi(argv[2]);
-	info->time_eat= ft_atoi(argv[3]);
+	info->time_die = ft_atoi(argv[2]);
+	info->time_eat = ft_atoi(argv[3]);
 	info->time_sleep = ft_atoi(argv[4]);
 	if (argc == 6)
 		info->eat_times = ft_atoi(argv[5]);
