@@ -1,22 +1,5 @@
 #include "../includes/philo.h"
 
-size_t	get_time(void)
-{
-	struct timeval	tp;
-
-	gettimeofday(&tp, NULL);
-	return (tp.tv_sec * 1000 + tp.tv_usec / 1000);
-}
-
-void	precise_sleep(size_t sleep_time)
-{
-	size_t	end_time;
-
-	end_time = get_time() + sleep_time;
-	while (get_time() < end_time)
-		usleep(100);
-}
-
 void	count_every_philo_eat(t_philo *philo)
 {
 	t_info	*info;

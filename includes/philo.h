@@ -75,6 +75,8 @@ void	*monitor_philo(void *arg_philo);
 int		create_monitoring(t_philo *philo);
 
 //philo_utils.c
+size_t	get_time(void);
+void	precise_sleep(size_t sleep_time);
 void	all_free(t_info *info);
 void	destroy_all_mutex(t_info *info);
 
