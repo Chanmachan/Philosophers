@@ -59,19 +59,19 @@ int		ft_isdigit(int c);
 int		ft_atoi(const char *str);
 
 //init.c
-int	init_info(t_info *info, int argc, char **argv);
+int		init_info(t_info *info, int argc, char **argv);
 
 //valid_arg.c
-int	valid_arg(int argc, char **argv);
+int		valid_arg(int argc, char **argv);
 
 //attitude.c
-int	take_fork(t_philo *philo);
-int	launch_eat(t_philo *philo);
-int	start_sleep(t_philo *philo);
+int		take_fork(t_philo *philo);
+int		launch_eat(t_philo *philo);
+int		start_sleep(t_philo *philo);
 void	*loop_attitude(void *arg_philo);
 
 //monitor.c
 void	*monitor_philo(void *arg_philo);
-int	create_monitoring(t_philo *philo);
+int		create_monitoring(t_philo *philo);
 
 #endif
