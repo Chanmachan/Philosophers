@@ -11,6 +11,7 @@ void	*monitor_philo(void *arg_philo)
 	while (1)
 	{
 		pthread_mutex_lock(&info->var_lock);
+		//data race
 		if (info->status == true)
 			break ;
 		if ((size_t)info->time_die <= get_time() - philo->last_eat_time)

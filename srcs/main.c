@@ -20,7 +20,9 @@ void	precise_sleep(size_t sleep_time)
 void	print_attitude(t_info *info, t_philo *philo, int num)
 {
 	size_t	output_time;
+	int		i;
 
+	i = -1;
 	pthread_mutex_lock(&info->atti);
 	pthread_mutex_lock(&info->var_lock);
 	output_time = info->time_log - info->start_time;
@@ -34,6 +36,13 @@ void	print_attitude(t_info *info, t_philo *philo, int num)
 			philo->count_eat++;
 		philo->last_eat_time = get_time();
 		if (info->eat_times <= philo->count_eat && info->eat_times != -1)
+			philo->eat_flag = true;
+		while (++i < info->num_philo)
+		{
+			if (philo[i].eat_flag == false)
+				break ;
+		}
+		if (i == info->num_philo)
 			info->status = true;
 		pthread_mutex_unlock(&info->var_lock);
 		printf("\x1b[32m%ld\t%d is eating\n\x1b[0m", output_time, philo->num + 1);
