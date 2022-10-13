@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: hommayunosuke <hommayunosuke@student.42    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2022/10/14 03:48:56 by hommayunosu       #+#    #+#             */
+/*   Updated: 2022/10/14 03:48:57 by hommayunosu      ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "../includes/philo.h"
 
 void	count_and_print_eat(t_philo *philo, size_t output_time)
@@ -78,6 +90,11 @@ int	prepare_table(t_info *info)
 	return (0);
 }
 
+/*__attribute__((destructor))
+static void destructor() {
+	system("leaks -q philo");
+}*/
+
 int	main(int argc, char **argv)
 {
 	t_info	info;
@@ -98,7 +115,7 @@ int	main(int argc, char **argv)
 		ft_putstr_fd("\x1b[31mError\x1b[0m: ", 2);
 		return (1);
 	}
+	all_free(&info);
 	destroy_all_mutex(&info);
-//	system("leaks -q philo");
 	return (0);
 }
