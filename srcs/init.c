@@ -19,6 +19,7 @@ static int	init_philo(t_info *info)
 		info->philo[i].last_eat_time = 0;
 		info->philo[i].count_eat = 0;
 		info->philo[i].info = info;
+		info->philo[i].eat_flag = false;
 		i++;
 	}
 	return (0);

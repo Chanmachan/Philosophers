@@ -28,9 +28,7 @@ void	count_every_philo_eat(t_philo *philo)
 		philo->count_eat++;
 	philo->last_eat_time = get_time();
 	if (philo->info->eat_times == philo->count_eat && philo->info->eat_times != -1)
-	{
 		philo->eat_flag = true;
-	}
 	i = 0;
 	while (i < info->num_philo)
 	{
@@ -39,9 +37,7 @@ void	count_every_philo_eat(t_philo *philo)
 		i++;
 	}
 	if (i == philo->info->num_philo)
-	{
 		info->status = true;
-	}
 	pthread_mutex_unlock(&philo->info->var_lock);
 }
 
@@ -81,43 +77,49 @@ int	prepare_table(t_info *info)
 	int			i;
 
 	philo = info->philo;
-	i = 0;
 	info->time_log = get_time();
 	philo->last_eat_time = info->time_log;
 	info->start_time = get_time();
-	while (i < info->num_philo)
+	i = -1;
+	while (++i < info->num_philo)
 	{
 		if (pthread_create(&philo[i].phil_thread, NULL, &loop_attitude, &philo[i]))
 			return (1);
-		i++;
 	}
-	i = 0;
-	while (i < info->num_philo)
+	i = -1;
+	while (++i < info->num_philo)
 	{
 		if (pthread_join(philo[i].phil_thread, (void *)&philo[i]))
 			return (1);
-		i++;
 	}
 	return (0);
 }
 
-int	error_msg(void)
+void	all_free(t_info *info)
 {
-	ft_putstr_fd("\x1b[31mError\x1b[0m: malloc error\n", 2);
-	return (1);
+	free(info->philo);
+}
+
+void	destroy_all_mutex(t_info *info)
+{
+	int		i;
+
+	i = -1;
+	while (++i < info->num_philo)
+		pthread_mutex_destroy(&info->fork[i]);
+	pthread_mutex_destroy(&info->atti);
+	pthread_mutex_destroy(&info->var_lock);
 }
 
 int main(int argc, char **argv)
 {
 	t_info	info;
-	int		i;
 
-	if (valid_arg(argc, argv))
-		return (1);
-	if (init_info(&info, argc, argv))
+	if (valid_arg(argc, argv) || init_info(&info, argc, argv))
 		return (1);
 	if (prepare_table(&info))
 	{
+		all_free(&info);
 		if (info.error != 0)
 			return (1);
 		ft_putstr_fd("\x1b[31mError\x1b[0m: In \"pthread_create\"\n", 2);
@@ -125,14 +127,11 @@ int main(int argc, char **argv)
 	}
 	if (info.error != 0)
 	{
+		all_free(&info);
 		ft_putstr_fd("\x1b[31mError\x1b[0m: ", 2);
 		return (1);
 	}
-	i = -1;
-	while (++i < info.num_philo)
-		pthread_mutex_destroy(&info.fork[i]);
-	pthread_mutex_destroy(&info.atti);
-	pthread_mutex_destroy(&info.var_lock);
+	destroy_all_mutex(&info);
 //	system("leaks -q philo");
 	return (0);
 }

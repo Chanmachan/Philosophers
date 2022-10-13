@@ -28,6 +28,7 @@ typedef struct s_philo
 	size_t		last_eat_time;
 	int			count_eat;
 	t_info		*info;
+	int			eat_flag;
 }				t_philo;
 
 typedef struct s_info
@@ -47,16 +48,15 @@ typedef struct s_info
 	t_philo			*philo;
 }				t_info;
 
-void	ft_putstr_fd(char *s, int fd);
-int		ft_isdigit(int c);
-int		ft_atoi(const char *str);
-void	*ft_calloc(size_t n, size_t size);
-
 //main.c
-int	error_msg(void);
 size_t	get_time(void);
 void	precise_sleep(size_t sleep_time);
 void	print_attitude(t_info *info, t_philo *philo, int num);
+
+//utils.c
+void	ft_putstr_fd(char *s, int fd);
+int		ft_isdigit(int c);
+int		ft_atoi(const char *str);
 
 //init.c
 int	init_info(t_info *info, int argc, char **argv);
