@@ -17,12 +17,38 @@ void	precise_sleep(size_t sleep_time)
 		usleep(100);
 }
 
+void	count_every_philo_eat(t_philo *philo)
+{
+	t_info	*info;
+	int	i;
+
+	info = philo->info;
+	pthread_mutex_lock(&philo->info->var_lock);
+	if (philo->info->eat_times != -1)
+		philo->count_eat++;
+	philo->last_eat_time = get_time();
+	if (philo->info->eat_times == philo->count_eat && philo->info->eat_times != -1)
+	{
+		philo->eat_flag = true;
+	}
+	i = 0;
+	while (i < info->num_philo)
+	{
+		if (info->philo[i].eat_flag == false)
+			break ;
+		i++;
+	}
+	if (i == philo->info->num_philo)
+	{
+		info->status = true;
+	}
+	pthread_mutex_unlock(&philo->info->var_lock);
+}
+
 void	print_attitude(t_info *info, t_philo *philo, int num)
 {
 	size_t	output_time;
-	int		i;
 
-	i = -1;
 	pthread_mutex_lock(&info->atti);
 	pthread_mutex_lock(&info->var_lock);
 	output_time = info->time_log - info->start_time;
@@ -31,20 +57,7 @@ void	print_attitude(t_info *info, t_philo *philo, int num)
 		printf("%ld\t%d has taken a fork\n", output_time, philo->num + 1);
 	else if (num == EAT && info->status == false)
 	{
-		pthread_mutex_lock(&info->var_lock);
-		if (info->eat_times != -1)
-			philo->count_eat++;
-		philo->last_eat_time = get_time();
-		if (info->eat_times <= philo->count_eat && info->eat_times != -1)
-			philo->eat_flag = true;
-		while (++i < info->num_philo)
-		{
-			if (philo[i].eat_flag == false)
-				break ;
-		}
-		if (i == info->num_philo)
-			info->status = true;
-		pthread_mutex_unlock(&info->var_lock);
+		count_every_philo_eat(philo);
 		printf("\x1b[32m%ld\t%d is eating\n\x1b[0m", output_time, philo->num + 1);
 	}
 	else if (num == SLEEP && info->status == false)
