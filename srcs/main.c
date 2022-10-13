@@ -1,6 +1,6 @@
 #include "../includes/philo.h"
 
-void	count_every_philo_eat(t_philo *philo)
+void	count_and_print_eat(t_philo *philo, size_t output_time)
 {
 	t_info	*info;
 	int		i;
@@ -23,6 +23,7 @@ void	count_every_philo_eat(t_philo *philo)
 	if (i == philo->info->num_philo)
 		info->status = true;
 	pthread_mutex_unlock(&philo->info->var_lock);
+	printf("\x1b[32m%ld\t%d is eating\n\x1b[0m", output_time, philo->num + 1);
 }
 
 void	print_attitude(t_info *info, t_philo *philo, int num)
@@ -36,10 +37,7 @@ void	print_attitude(t_info *info, t_philo *philo, int num)
 	if (num == FORK && info->status == false)
 		printf("%ld\t%d has taken a fork\n", output_time, philo->num + 1);
 	else if (num == EAT && info->status == false)
-	{
-		count_every_philo_eat(philo);
-		printf("\x1b[32m%ld\t%d is eating\n\x1b[0m", output_time, philo->num + 1);
-	}
+		count_and_print_eat(philo, output_time);
 	else if (num == SLEEP && info->status == false)
 		printf("\x1b[35m%ld\t%d is sleeping\n\x1b[0m", output_time, philo->num + 1);
 	else if (num == THINK && info->status == false)
