@@ -104,6 +104,7 @@ int	main(int argc, char **argv)
 	if (prepare_table(&info))
 	{
 		all_free(&info);
+		destroy_all_mutex(&info);
 		if (info.error != 0)
 			return (1);
 		ft_putstr_fd("\x1b[31mError\x1b[0m: In \"pthread_create\"\n", 2);
@@ -112,6 +113,7 @@ int	main(int argc, char **argv)
 	if (info.error != 0)
 	{
 		all_free(&info);
+		destroy_all_mutex(&info);
 		ft_putstr_fd("\x1b[31mError\x1b[0m: ", 2);
 		return (1);
 	}
