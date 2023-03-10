@@ -60,33 +60,33 @@ typedef struct s_info
 	t_philo			*philo;
 }				t_info;
 
-//main.c
+// main.c
 size_t	get_time(void);
 void	precise_sleep(size_t sleep_time);
 void	print_attitude(t_info *info, t_philo *philo, int num);
 
-//utils.c
+// utils.c
 void	ft_putstr_fd(char *s, int fd);
 int		ft_isdigit(int c);
 int		ft_atoi(const char *str);
 
-//init.c
+// init.c
 int		init_info(t_info *info, int argc, char **argv);
 
-//valid_arg.c
+// valid_arg.c
 int		valid_arg(int argc, char **argv);
 
-//attitude.c
+// attitude.c
 int		take_fork(t_philo *philo);
 int		launch_eat(t_philo *philo);
 int		start_sleep(t_philo *philo);
 void	*loop_attitude(void *arg_philo);
 
-//monitor.c
+// monitor.c
 void	*monitor_philo(void *arg_philo);
 int		create_monitoring(t_philo *philo);
 
-//philo_utils.c
+// philo_utils.c
 size_t	get_time(void);
 void	precise_sleep(size_t sleep_time);
 void	all_free(t_info *info);
