@@ -54,6 +54,7 @@ int	init_info(t_info *info, int argc, char **argv)
 	info->status = false;
 	pthread_mutex_init(&info->atti, NULL);
 	pthread_mutex_init(&info->var_lock, NULL);
+	info->fork = malloc(sizeof(pthread_mutex_t) * info->num_philo);
 	i = -1;
 	while (++i < info->num_philo)
 		pthread_mutex_init(&info->fork[i], NULL);

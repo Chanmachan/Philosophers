@@ -56,7 +56,7 @@ typedef struct s_info
 	int				status;
 	pthread_mutex_t	atti;
 	pthread_mutex_t	var_lock;
-	pthread_mutex_t	fork[200];
+	pthread_mutex_t	*fork;
 	t_philo			*philo;
 }				t_info;
 
