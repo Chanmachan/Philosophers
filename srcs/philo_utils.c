@@ -32,6 +32,7 @@ void	precise_sleep(size_t sleep_time)
 void	all_free(t_info *info)
 {
 	free(info->philo);
+	free(info->fork);
 }
 
 void	destroy_all_mutex(t_info *info)
